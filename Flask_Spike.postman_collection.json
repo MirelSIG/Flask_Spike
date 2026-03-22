@@ -1,0 +1,54 @@
+{
+  "info": {
+    "name": "Flask_Spike - Tasks API",
+    "_postman_id": "12345678-abcd-efgh-ijkl-123456789000",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "List all tasks",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/tasks/"
+      }
+    },
+    {
+      "name": "Get task by ID",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/tasks/1"
+      }
+    },
+    {
+      "name": "Create task",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Nueva tarea\"}"
+        },
+        "url": "http://localhost:5000/tasks/"
+      }
+    },
+    {
+      "name": "Update task",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Tarea actualizada\", \"done\": 1}"
+        },
+        "url": "http://localhost:5000/tasks/1"
+      }
+    },
+    {
+      "name": "Delete task",
+      "request": {
+        "method": "DELETE",
+        "url": "http://localhost:5000/tasks/1"
+      }
+    }
+  ]
+}
