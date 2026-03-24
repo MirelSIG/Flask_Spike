@@ -1,44 +1,54 @@
 from flask import Blueprint, request, jsonify
-from models.task_model import (
-    get_all_tasks, get_task, create_task, update_task, delete_task
-)
+import sqlite3
+from config import DATABASE
 
-tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
+tasks_bp = Blueprint('tasks', __name__)
 
-@tasks_bp.get("/")
-def list_tasks():
-    return jsonify(get_all_tasks()), 200
+# ==================== GET ALL ====================
+@tasks_bp.route('/tasks', methods=['GET'])
+def get_tasks():
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM tasks")
+    rows = cursor.fetchall()
+    conn.close()
 
-@tasks_bp.get("/<int:id>")
-def retrieve_task(id):
-    task = get_task(id)
-    if task:
-        return jsonify(task), 200
-    return jsonify({"error": "Task not found"}), 404
+    tasks = []
+    for row in rows:
+        tasks.append({
+            "id": row[0],
+            "titulo": row[1],
+            "descripcion": row[2],
+            "completada": bool(row[3]),
+            "fecha_creacion": row[4]
+        })
+    
+    return jsonify(tasks)
 
-@tasks_bp.post("/")
-def add_task():
+# ==================== CREATE ====================
+@tasks_bp.route('/tasks', methods=['POST'])
+def create_task():
     data = request.get_json()
-    if not data or "title" not in data:
-        return jsonify({"error": "Missing title"}), 400
+    
+    titulo = data.get('titulo')
+    descripcion = data.get('descripcion', '')
 
-    new_id = create_task(data["title"])
-    return jsonify({"message": "Task created", "id": new_id}), 201
+    if not titulo:
+        return jsonify({"error": "El título es obligatorio"}), 400
 
-@tasks_bp.put("/<int:id>")
-def edit_task(id):
-    data = request.get_json()
-    if not data or "title" not in data or "done" not in data:
-        return jsonify({"error": "Missing fields"}), 400
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO tasks (titulo, descripcion)
+        VALUES (?, ?)
+    ''', (titulo, descripcion))
+    
+    conn.commit()
+    task_id = cursor.lastrowid
+    conn.close()
 
-    updated = update_task(id, data["title"], data["done"])
-    if updated:
-        return jsonify({"message": "Task updated"}), 200
-    return jsonify({"error": "Task not found"}), 404
-
-@tasks_bp.delete("/<int:id>")
-def remove_task(id):
-    deleted = delete_task(id)
-    if deleted:
-        return jsonify({"message": "Task deleted"}), 200
-    return jsonify({"error": "Task not found"}), 404
+    return jsonify({
+        "mensaje": "Tarea creada exitosamente",
+        "id": task_id,
+        "titulo": titulo
+    }), 201
