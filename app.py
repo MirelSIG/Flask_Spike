@@ -24,7 +24,7 @@ def home():
 
 if __name__ == "__main__":
     # Crear la base de datos y tablas la primera vez
-    from config import init_db   # Vamos a crear este archivo
+    from config import init_db   
     init_db()
     
     print("Servidor corriendo en http://127.0.0.1:5000")

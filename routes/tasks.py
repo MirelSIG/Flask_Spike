@@ -4,7 +4,7 @@ from config import DATABASE
 
 tasks_bp = Blueprint('tasks', __name__)
 
-# ==================== GET ALL ====================
+# GET ALL 
 @tasks_bp.route('/tasks', methods=['GET'])
 def get_tasks():
     conn = sqlite3.connect(DATABASE)
