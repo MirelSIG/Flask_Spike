@@ -1,110 +1,100 @@
-# Flask_Spike - API de tareas
+# Flask_Spike - API de tareas con Flask + SQLite
 
-Este proyecto es una mini API REST hecha con Flask, pensada para aprender:
+Siguiendo el patron de proyecto_flask_2:
 
-- Cómo funciona Flask.
-- Cómo crear endpoints.
-- Cómo devolver respuestas HTTP.
-- Cómo usar SQLite.
-- Cómo probar la API con Postman.
+- app.py como punto de arranque.
+- src/webserver.py para rutas HTTP.
+- src/task.py como capa servicio.
+- src/task_repository_sqlite.py como repositorio SQLite.
 
-## 1. ¿Qué es Flask?
+## Estructura
 
-Flask es un microframework de Python que permite crear aplicaciones web y APIs de forma sencilla.  
-Piensa en Flask como un motor que recibe peticiones y devuelve respuestas.
-
-## 2. Instalación
-
-# Crear entorno virtual (si no existe)
-py -m venv .venv
-
-# Activarlo
-.\.venv\Scripts\Activate.ps1
-
-# Instalar Flask
-python -m pip install --upgrade pip
-pip install Flask
-
-# Verificar importación
-python -c "import flask; print(flask.__version__)"
-
-1. Asegúrate de tener Python 3 instalado.
-2. Instala las dependencias:
-
-```bash
-pip install -r requirements.txt
+```text
+Flask_Spike/
+├── app.py
+├── requirements.txt
+├── tasks.db
+├── Flask_Spike.postman_collection.json
+└── src/
+    ├── __init__.py
+    ├── webserver.py
+    ├── task.py
+    └── task_repository_sqlite.py
 ```
 
-1. Ejecuta la aplicación:
+## Instalacion
+
+```bash
+cd /Users/mirelvolcan/Flask_Spike
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+## Ejecucion
 
 ```bash
 python app.py
 ```
 
-1. La API estará disponible en:
+Servidor local:
 
-`http://localhost:5000`
+- http://127.0.0.1:5000
 
-## 3. Endpoints disponibles
+## Endpoints
 
-Base URL: `http://localhost:5000`
+Base URL: http://127.0.0.1:5000
 
-- `GET /tasks/`
-  - Lista todas las tareas.
-  - Respuesta: `200`.
+1. GET /
+2. GET /tasks
+3. GET /tasks/<id>
+4. POST /tasks
+5. PUT /tasks/<id>
+6. DELETE /tasks/<id>
 
-- `GET /tasks/<id>`
-  - Obtiene una tarea por ID.
-  - Respuestas: `200`, `404`.
-
-- `POST /tasks/`
-  - Crea una tarea.
-  - Body requerido:
+Body ejemplo para POST y PUT:
 
 ```json
 {
-  "title": "Mi tarea"
+  "titulo": "Mi tarea",
+  "descripcion": "Detalle opcional",
+  "completada": false
 }
 ```
 
-- Respuestas: `201`, `400`.
+## Base de datos
 
-- `PUT /tasks/<id>`
-  - Actualiza una tarea por ID.
-  - Body requerido:
+La tabla tasks se crea automaticamente desde src/task_repository_sqlite.py.
 
-```json
-{
-  "title": "Tarea actualizada",
-  "done": true
-}
+Campos:
+
+- id INTEGER PRIMARY KEY AUTOINCREMENT
+- titulo TEXT NOT NULL
+- descripcion TEXT
+- completada BOOLEAN DEFAULT 0
+- fecha_creacion TEXT DEFAULT CURRENT_TIMESTAMP
+
+### Limpiar DDBB (reset)
+
+Para vaciar la tabla y reiniciar el contador de ids:
+
+```bash
+cd /Users/mirelvolcan/Flask_Spike
+source .venv/bin/activate
+python -c "import sqlite3; con=sqlite3.connect('tasks.db'); cur=con.cursor(); cur.execute('DELETE FROM tasks'); cur.execute(\"DELETE FROM sqlite_sequence WHERE name='tasks'\"); con.commit(); con.close()"
 ```
 
-- Respuestas: `200`, `400`, `404`.
+Comprobar que quedo vacia:
 
-- `DELETE /tasks/<id>`
-  - Elimina una tarea por ID.
-  - Respuestas: `200`, `404`.
+```bash
+python -c "from app import app; c=app.test_client(); r=c.get('/tasks'); print(r.status_code, r.get_json())"
+```
 
-## 4. Probar la API con Postman
+Salida esperada:
 
-1. Abre Postman.
-2. Crea o importa una colección.
-3. Ejecuta las peticiones una por una.
-4. Revisa códigos HTTP y respuestas JSON.
+- 200 []
 
-## 5. Base de datos
+## Nota
 
-Se usa SQLite, una base de datos ligera que no necesita servidor.  
-El archivo se crea automáticamente en el proyecto.
-
-## 6. Objetivo del proyecto
-
-Este spike sirve para aprender:
-
-- Arquitectura API REST.
-- Decoradores de Flask.
-- Uso de `request` y `jsonify`.
-- Respuestas HTTP.
-- Pruebas con Postman.
-- SQLite básico.
+Si usas python3 global puede fallar por dependencias fuera del entorno virtual.
+Usa siempre .venv activado para ejecutar el backend.
