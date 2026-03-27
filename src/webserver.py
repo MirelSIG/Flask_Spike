@@ -55,5 +55,5 @@ def update_task_route(task_id):
 def delete_task(task_id):
     deleted = del_task(task_id)
     if not deleted:
-        return jsonify({"error": "Tarea no encontrada"}), 404
+        return jsonify({"error": "Tarea eliminada exitosamente"}), 404
     return "", 204
