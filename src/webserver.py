@@ -1,59 +1,104 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-
-from .task import del_task, get_all_tasks, get_task_by, post_task, update_task
+import src.task_repository_sqlite as repo
 
 app = Flask(__name__)
-cors = CORS(app)
+CORS(app)
 
 
-@app.route("/")
-def hello_root():
-    return "<h1>Hola, este es el endpoint raiz de Flask_Spike</h1>"
+@app.get("/")
+def home():
+    return {
+        "status": "ok",
+        "endpoints": [
+            "GET /tasks",
+            "POST /tasks",
+            "GET /tasks/<id>",
+            "PUT /tasks/<id>",
+            "DELETE /tasks/<id>",
+            "GET /categories",
+            "POST /categories",
+            "GET /categories/<id>/tasks"
+        ]
+    }
 
 
-@app.route("/tasks", methods=["GET"])
+# ------------------------------
+# TASKS
+# ------------------------------
+
+@app.get("/tasks")
 def get_tasks():
-    return jsonify(get_all_tasks()), 200
+    return jsonify(repo.read_all())
 
 
-@app.route("/tasks/<int:task_id>", methods=["GET"])
+@app.get("/tasks/<int:task_id>")
 def get_task(task_id):
-    task = get_task_by(task_id)
-    if task is None:
-        return jsonify({"error": "Tarea no encontrada"}), 404
-    return jsonify(task), 200
+    task = repo.read(task_id)
+    if task:
+        return jsonify(task)
+    return jsonify({"error": "Task no encontrada"}), 404
 
 
-@app.route("/tasks", methods=["POST"])
-def new_task():
-    data = request.get_json(silent=True) or {}
-    if not data.get("titulo"):
-        return jsonify({"error": "El titulo es obligatorio"}), 400
-
-    task_id = post_task(data)
-    if task_id is None:
-        return jsonify({"error": "No se pudo crear la tarea"}), 500
-
-    return jsonify({"message": "Tarea creada", "id": task_id}), 201
+@app.post("/tasks")
+def create_task():
+    data = request.json
+    new_id = repo.create(data)
+    return jsonify({"id": new_id}), 201
 
 
-@app.route("/tasks/<int:task_id>", methods=["PUT"])
-def update_task_route(task_id):
-    data = request.get_json(silent=True) or {}
-    if not data.get("titulo"):
-        return jsonify({"error": "El titulo es obligatorio"}), 400
-
-    updated = update_task(task_id, data)
-    if not updated:
-        return jsonify({"error": "Tarea no encontrada"}), 404
-
-    return jsonify({"message": "Tarea actualizada"}), 200
+@app.put("/tasks/<int:task_id>")
+def update_task(task_id):
+    data = request.json
+    ok = repo.update(task_id, data)
+    return jsonify({"updated": ok})
 
 
-@app.route("/tasks/<int:task_id>", methods=["DELETE"])
+@app.delete("/tasks/<int:task_id>")
 def delete_task(task_id):
-    deleted = del_task(task_id)
-    if not deleted:
-        return jsonify({"error": "Tarea eliminada exitosamente"}), 404
-    return "", 204
+    ok = repo.delete(task_id)
+    return jsonify({"deleted": ok})
+
+
+# ------------------------------
+# CATEGORIES
+# ------------------------------
+
+
+from .task import (
+    post_category,
+    get_all_categories,
+    get_tasks_by_category
+)
+
+@app.get("/categories")
+def list_categories():
+    return jsonify(get_all_categories()), 200
+
+
+@app.post("/categories")
+def create_category():
+    data = request.get_json(silent=True) or {}
+    nombre = data.get("nombre")
+
+    if not nombre:
+        return jsonify({"error": "nombre requerido"}), 400
+
+    new_id = post_category(nombre)
+    return jsonify({"id": new_id, "nombre": nombre}), 201
+
+
+@app.get("/categories/<int:category_id>/tasks")
+def tasks_by_category(category_id):
+    tasks = get_tasks_by_category(category_id)
+    return jsonify(tasks), 200
+
+
+
+# ------------------------------
+# RUN
+# ------------------------------
+
+if __name__ == "__main__":
+    print("Servidor en http://127.0.0.1:5000")
+    app.run(debug=True)

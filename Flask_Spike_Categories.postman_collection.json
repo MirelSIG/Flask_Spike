@@ -1,0 +1,87 @@
+{
+  "info": {
+    "name": "Flask Spike - Tasks + Categories API",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-123456789000",
+    "description": "Colección completa para probar tareas y categorías en Flask",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET - Listar tareas",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5000/tasks"
+      }
+    },
+    {
+      "name": "GET - Obtener tarea por ID",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5000/tasks/1"
+      }
+    },
+    {
+      "name": "POST - Crear tarea",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"Preparar presentación\",\n  \"descripcion\": \"Slides para el bootcamp\",\n  \"completada\": false,\n  \"category_id\": 1\n}"
+        },
+        "url": "http://127.0.0.1:5000/tasks"
+      }
+    },
+    {
+      "name": "PUT - Actualizar tarea",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"Tarea actualizada\",\n  \"descripcion\": \"Descripción modificada\",\n  \"completada\": true,\n  \"category_id\": 2\n}"
+        },
+        "url": "http://127.0.0.1:5000/tasks/1"
+      }
+    },
+    {
+      "name": "DELETE - Eliminar tarea",
+      "request": {
+        "method": "DELETE",
+        "url": "http://127.0.0.1:5000/tasks/1"
+      }
+    },
+    {
+      "name": "GET - Listar categorías",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5000/categories"
+      }
+    },
+    {
+      "name": "POST - Crear categoría",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Trabajo\"\n}"
+        },
+        "url": "http://127.0.0.1:5000/categories"
+      }
+    },
+    {
+      "name": "GET - Tareas por categoría",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5000/categories/1/tasks"
+      }
+    }
+  ]
+}
