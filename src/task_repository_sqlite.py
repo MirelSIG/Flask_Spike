@@ -1,6 +1,8 @@
 import sqlite3
+from pathlib import Path
 
-DB_PATH = "tasks.db"
+# Ruta absoluta al tasks.db en la raiz del proyecto
+DB_PATH = str(Path(__file__).resolve().parent.parent / "tasks.db")
 
 
 def _init_db():
