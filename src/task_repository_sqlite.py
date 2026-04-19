@@ -1,18 +1,20 @@
 import sqlite3
 from pathlib import Path
 
-# Ruta absoluta al tasks.db en la raiz del proyecto
+# El archivo de base de datos se guarda en la raíz del proyecto para que
+# toda la aplicación use una única ubicación compartida.
 DB_PATH = str(Path(__file__).resolve().parent.parent / "tasks.db")
 
 
 def _init_db():
+    # Se abre una conexión temporal solo para preparar el esquema.
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
 
-    # Activar claves foráneas
+    # SQLite no aplica claves foráneas automáticamente; esta opción las activa.
     cur.execute("PRAGMA foreign_keys = ON;")
 
-    # Tabla original
+    # Tabla principal de tareas. Si ya existe, no se vuelve a crear.
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS tasks (
@@ -25,7 +27,7 @@ def _init_db():
         """
     )
 
-    # Nueva tabla relacionada
+    # Tabla de categorías para agrupar tareas por tema.
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS categories (
@@ -35,19 +37,22 @@ def _init_db():
         """
     )
 
-    # Añadir category_id si no existe
+    # Migración simple: si la tabla tasks es antigua, le agregamos category_id.
     cur.execute("PRAGMA table_info(tasks)")
     columnas = [col[1] for col in cur.fetchall()]
 
     if "category_id" not in columnas:
+        # category_id apunta a categories.id, lo que permite relacionar ambas tablas.
         cur.execute(
             "ALTER TABLE tasks ADD COLUMN category_id INTEGER REFERENCES categories(id)"
         )
 
+    # Guardamos cualquier cambio del esquema antes de cerrar la conexión.
     con.commit()
     con.close()
 
 
+# Inicializa la base y el esquema al importar este módulo.
 _init_db()
 
 
@@ -56,6 +61,7 @@ _init_db()
 # ------------------------------
 
 def _task_from_row(row):
+    # Convierte una fila cruda de SQLite en un diccionario listo para JSON.
     if row is None:
         return None
     return {
@@ -73,6 +79,7 @@ def _task_from_row(row):
 # ------------------------------
 
 def read(task_id):
+    # Devuelve una única tarea por id.
     con = sqlite3.connect(DB_PATH)
     try:
         cur = con.cursor()
@@ -86,6 +93,7 @@ def read(task_id):
 
 
 def read_all():
+    # Devuelve todas las tareas ordenadas por id para que la salida sea estable.
     con = sqlite3.connect(DB_PATH)
     try:
         cur = con.cursor()
@@ -98,6 +106,7 @@ def read_all():
 
 
 def create(new_task):
+    # Inserta una tarea nueva usando valores por defecto cuando faltan campos.
     con = sqlite3.connect(DB_PATH)
     try:
         cur = con.cursor()
@@ -118,6 +127,7 @@ def create(new_task):
 
 
 def update(task_id, data):
+    # Actualiza una tarea existente y retorna True solo si afectó una fila.
     con = sqlite3.connect(DB_PATH)
     try:
         cur = con.cursor()
@@ -139,6 +149,7 @@ def update(task_id, data):
 
 
 def delete(task_id):
+    # Elimina una tarea por id.
     con = sqlite3.connect(DB_PATH)
     try:
         cur = con.cursor()
@@ -154,6 +165,7 @@ def delete(task_id):
 # ------------------------------
 
 def create_category(nombre):
+    # Crea una categoría con nombre único.
     con = sqlite3.connect(DB_PATH)
     try:
         cur = con.cursor()
@@ -165,6 +177,7 @@ def create_category(nombre):
 
 
 def list_categories():
+    # Lista todas las categorías para poblar selectores o filtros.
     con = sqlite3.connect(DB_PATH)
     try:
         cur = con.cursor()
@@ -175,6 +188,7 @@ def list_categories():
 
 
 def tasks_by_category(category_id):
+    # Recupera solo las tareas que pertenecen a una categoría concreta.
     con = sqlite3.connect(DB_PATH)
     try:
         cur = con.cursor()

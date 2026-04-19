@@ -34,16 +34,16 @@ python -m pip install -r requirements.txt
 ## Ejecucion
 
 ```bash
-python app.py
+python3 app.py
 ```
 
 Servidor local:
 
-- http://127.0.0.1:5000
+- http://127.0.0.1:5001
 
 ## Endpoints
 
-Base URL: http://127.0.0.1:5000
+Base URL: http://127.0.0.1:5001
 
 1. GET /
 2. GET /tasks
